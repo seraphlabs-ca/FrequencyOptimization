@@ -44,7 +44,7 @@ class FrequencyFilter(object):
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
             data = self.signal_dict.get(k, [])
-            if isinstance(d, float):
+            if isinstance(v, float):
                 d = v
             else:
                 d = v.data.numpy().tolist()
