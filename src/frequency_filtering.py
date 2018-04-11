@@ -44,7 +44,10 @@ class FrequencyFilter(object):
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
             data = self.signal_dict.get(k, [])
-            data.append(v.data.numpy().tolist())
+            d = v.data.numpy().tolist()
+            if isinstance(d, list):
+                d = d[0]
+            data.append(d)
             if self.active:
                 f_data = butter_apply_filter(
                     data=data,
@@ -60,9 +63,8 @@ class FrequencyFilter(object):
             self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
 
             # scale signal
-            coef = np.array(self.f_signal_dict[k][-1]) / np.array(self.signal_dict[k]
-                                                                  [-1]) if np.all(np.array(self.signal_dict[k][-1])) else 1.0
-            f_signal_dict[k] = v * np.squeeze(coef)
+            coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
+            f_signal_dict[k] = v * coef
 
         return f_signal_dict
 
