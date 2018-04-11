@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from scipy.fftpack import rfft, irfft, rfftfreq
 from scipy.signal import butter, lfilter, freqz
+import numpy as np
 
 #=============================================================================#
 # Functions
@@ -59,7 +60,8 @@ class FrequencyFilter(object):
             self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
 
             # scale signal
-            coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
+            coef = np.array(self.f_signal_dict[k][-1]) / np.array(self.signal_dict[k]
+                                                                  [-1]) if np.all(np.array(self.signal_dict[k][-1])) else 1.0
             f_signal_dict[k] = v * coef
 
         return f_signal_dict
