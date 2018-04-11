@@ -44,9 +44,13 @@ class FrequencyFilter(object):
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
             data = self.signal_dict.get(k, [])
-            d = v.data.numpy().tolist()
-            if isinstance(d, list):
-                d = d[0]
+            if isinstance(d, float):
+                d = v
+            else:
+                d = v.data.numpy().tolist()
+                if isinstance(d, list):
+                    d = d[0]
+
             data.append(d)
             if self.active:
                 f_data = butter_apply_filter(
