@@ -24,10 +24,8 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
-parser.add_argument('--freq-filter', action='store_true', default=False,
-                    help='apply frequency filtering')
-parser.add_argument('--freq-cutoff', type=float, default=0.1,
-                    help='frequency filtering cutoff \in (0, 0.5)')
+parser.add_argument('--freq-cutoff', type=float, default=-1.0,
+                    help='frequency filtering cutoff \in (0, 0.5), if < 0 then no filtering is used')
 parser.add_argument('--freq-order', type=int, default=3,
                     help='frequency filtering filter order')
 args = parser.parse_args()
@@ -91,7 +89,7 @@ if args.cuda:
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 freq_filter = FrequencyFilter(
-    active=args.freq_filter,
+    active=args.freq_cutoff > 0.0,
     cutoff=args.freq_cutoff,
     order=args.freq_order,
 )
@@ -181,8 +179,8 @@ try:
     import common.options as opts
 
     image_path = os.path.join("..", "data", "generated", "vae",
-                              "images.freq-filter_%i__freq-cutoff_%e__freq-order_%i.%s" % (
-                                  args.freq_filter, args.freq_cutoff, args.freq_order,
+                              "images.freq-cutoff_%e__freq-order_%i.%s" % (
+                                  args.freq_cutoff, args.freq_order,
                                   common.aux.get_fname_timestamp(),
                               ))
     logger.info("image_path = %s" % image_path)
