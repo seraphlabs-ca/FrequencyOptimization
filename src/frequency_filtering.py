@@ -24,6 +24,11 @@ def butter_apply_filter(data, cutoff, fs, order=5, btype='low'):
 class FrequencyFilter(object):
     """
     Return a low-pass filtered value to pytoch variables
+
+    It implements a weighting scheme (for loss and gradients) of filtered(loss) / loss with the following behaviour:
+        loss > filtered(loss) => reduce weight
+        loss < filtered(loss) => increase weight
+        which give higher weights when current loss better then current estimate.
     """
 
     def __init__(self, active=True, cutoff=0.1, order=3, btype='low'):
