@@ -145,7 +145,11 @@ try:
     from common.root_logger import logger
     import common.options as opts
 
-    image_path = os.path.join("..", "data", "generated", "images." + common.aux.get_fname_timestamp())
+    image_path = os.path.join("..", "data", "generated", "mnist",
+                              "images.freq-filter_%i__freq-cutoff_%e__freq-order_%i.%s" % (
+                                  args.freq_filter, args.freq_cutoff, args.freq_order,
+                                  common.aux.get_fname_timestamp(),
+                              ))
     logger.info("image_path = %s" % image_path)
     common.media.save_all_figs(image_path, im_type="png")
     common.media.save_all_figs(image_path, im_type="html")
