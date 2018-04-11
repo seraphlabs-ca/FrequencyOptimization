@@ -31,6 +31,22 @@ parser.add_argument('--freq-order', type=int, default=3,
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
+try:
+    import common
+    import common.media
+    from common.root_logger import logger
+    import common.options as opts
+
+    image_path = os.path.join("..", "data", "generated", "vae",
+                              "images.freq-cutoff_%e__freq-order_%i.%s" % (
+                                  args.freq_cutoff, args.freq_order,
+                                  common.aux.get_fname_timestamp(),
+                              ))
+    logger.info("image_path = %s" % image_path)
+except:
+    image_path = "./"
+
+os.system("mkdir -p %s/results" % image_path)
 
 torch.manual_seed(args.seed)
 if args.cuda:
@@ -94,8 +110,6 @@ freq_filter = FrequencyFilter(
     order=args.freq_order,
 )
 
-os.system("mkdir -p results")
-
 # Reconstruction + KL divergence losses summed over all elements and batch
 
 
@@ -149,7 +163,7 @@ def test(epoch):
             comparison = torch.cat([data[:n],
                                     recon_batch.view(args.batch_size, 1, 28, 28)[:n]])
             save_image(comparison.data.cpu(),
-                       'results/reconstruction_' + str(epoch) + '.png', nrow=n)
+                       '%s/results/reconstruction_' % image_path + str(epoch) + '.png', nrow=n)
 
     test_loss /= len(test_loader.dataset)
     print('====> Test set loss: {:.4f}'.format(test_loss))
@@ -165,7 +179,7 @@ try:
             sample = sample.cuda()
         sample = model.decode(sample).cpu()
         save_image(sample.data.view(64, 1, 28, 28),
-                   'results/sample_' + str(epoch) + '.png')
+                   '%s/results/sample_' % image_path + str(epoch) + '.png')
 except KeyboardInterrupt as e:
     print("CTRL-C detected - stopping training")
 
@@ -173,17 +187,6 @@ freq_filter.plot()
 
 # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
 try:
-    import common
-    import common.media
-    from common.root_logger import logger
-    import common.options as opts
-
-    image_path = os.path.join("..", "data", "generated", "vae",
-                              "images.freq-cutoff_%e__freq-order_%i.%s" % (
-                                  args.freq_cutoff, args.freq_order,
-                                  common.aux.get_fname_timestamp(),
-                              ))
-    logger.info("image_path = %s" % image_path)
     common.media.save_all_figs(image_path, im_type="png")
     common.media.save_all_figs(image_path, im_type="html")
     opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
@@ -191,7 +194,6 @@ try:
         "signal": freq_filter.signal_dict,
         "f_signal": freq_filter.f_signal_dict,
     }).export_as_json(os.path.join(image_path, "results"))
-    os.system("mv -f results %s" % image_path)
 except Exception as e:
     print("Failed saving plots")
     traceback.print_exc()
