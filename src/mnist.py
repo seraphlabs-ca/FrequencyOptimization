@@ -27,11 +27,11 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
-parser.add_argument('--freq-filter', action='store_true', default=False, metavar="freq_filter",
+parser.add_argument('--freq-filter', action='store_true', default=False,
                     help='apply frequency filtering')
-parser.add_argument('--freq-cutoff', type=float, default=0.1, metavar='cutoff',
+parser.add_argument('--freq-cutoff', type=float, default=0.1,
                     help='frequency filtering cutoff \in (0, 0.5)')
-parser.add_argument('--freq-order', type=int, default=3, metavar='order',
+parser.add_argument('--freq-order', type=int, default=3,
                     help='frequency filtering filter order')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -84,13 +84,9 @@ optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
 freq_filter = FrequencyFilter(
     active=args.freq_filter,
-    cutoff=args.cutoff,
-    order=args.order,
+    cutoff=args.freq_cutoff,
+    order=args.freq_order,
 )
-
-
-def step_filter(loss):
-    return freq_filter.step({"loss": loss})["loss"]
 
 
 def train(epoch):
@@ -102,6 +98,7 @@ def train(epoch):
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
+        loss = freq_filter.step({"train": loss})["train"]
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
@@ -127,6 +124,7 @@ def test():
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+    freq_filter.step({"test": test_loss})["test"]
 
 
 try:

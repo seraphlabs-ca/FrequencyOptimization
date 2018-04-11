@@ -1,4 +1,4 @@
-
+import matplotlib.pyplot as plt
 from scipy.fftpack import rfft, irfft, rfftfreq
 from scipy.signal import butter, lfilter, freqz
 
@@ -41,10 +41,11 @@ class FrequencyFilter(object):
         signal_dict - a dictionary with scalar of current value.
         """
         f_signal_dict = {}
-        for name, value in self.signal_dict:
-            data = self.signal_dict.get(name, [])
-            data.append(value.data.numpy().tolist())
+        for k, v in signal_dict.iteritems():
+            data = self.signal_dict.get(k, [])
+            data.append(v.data.numpy().tolist())
             if self.active:
+                import pudb; pudb.set_trace()
                 f_data = butter_apply_filter(
                     data=data,
                     cutoff=self.cutoff,
@@ -60,7 +61,7 @@ class FrequencyFilter(object):
 
             # scale signal
             coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
-            f_signal_dict[k] = value * coef
+            f_signal_dict[k] = v * coef
 
         return f_signal_dict
 
@@ -78,6 +79,6 @@ class FrequencyFilter(object):
             plt.xlabel("step")
             plt.ylabel("value")
             plt.grid()
-            plt.title("k")
+            plt.title(k)
             plt.legend(loc="best")
             plt.tight_layout()
