@@ -268,6 +268,8 @@ try:
 
             errD_real = freq_filter.step({"train.errD_real": errD_real})["train.errD_real"]
             errD_fake = freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"]
+            freq_filter.step({"train.D_x": D_x})
+            freq_filter.step({"train.D_G_z1": D_G_z1})
 
             errD = errD_real + errD_fake
             optimizerD.step()
@@ -283,6 +285,7 @@ try:
             D_G_z2 = output.data.mean()
 
             errG = freq_filter.step({"train.errG": errG})["train.errG"]
+            freq_filter.step({"train.D_G_z2": D_G_z2})
 
             optimizerG.step()
 
