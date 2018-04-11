@@ -134,7 +134,7 @@ try:
         train(epoch)
         test()
 except KeyboardInterrupt as e:
-    print "CTRL-C detected - stopping training"
+    print("CTRL-C detected - stopping training")
 
 freq_filter.plot()
 
@@ -150,5 +150,5 @@ try:
     common.media.save_all_figs(image_path)
     opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
 except Exception as e:
-    print "Failed saving plots"
+    print("Failed saving plots")
     traceback.print_exc()
