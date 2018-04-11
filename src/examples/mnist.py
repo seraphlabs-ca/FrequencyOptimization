@@ -100,7 +100,7 @@ def train(epoch):
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
-        loss = freq_filter.step({"train.loss": loss})["train"]
+        loss = freq_filter.step({"train.loss": loss})["train.loss"]
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
