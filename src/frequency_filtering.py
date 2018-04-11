@@ -62,7 +62,7 @@ class FrequencyFilter(object):
             # scale signal
             coef = np.array(self.f_signal_dict[k][-1]) / np.array(self.signal_dict[k]
                                                                   [-1]) if np.all(np.array(self.signal_dict[k][-1])) else 1.0
-            f_signal_dict[k] = v * coef
+            f_signal_dict[k] = v * np.squeeze(coef)
 
         return f_signal_dict
 
