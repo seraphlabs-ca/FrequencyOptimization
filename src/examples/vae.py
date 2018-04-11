@@ -90,8 +90,17 @@ if args.cuda:
     model.cuda()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
+freq_filter = FrequencyFilter(
+    active=args.freq_filter,
+    cutoff=args.freq_cutoff,
+    order=args.freq_order,
+)
+
+os.system("mkdir -p results")
 
 # Reconstruction + KL divergence losses summed over all elements and batch
+
+
 def loss_function(recon_x, x, mu, logvar):
     BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), size_average=False)
 
@@ -184,6 +193,7 @@ try:
         "signal": freq_filter.signal_dict,
         "f_signal": freq_filter.f_signal_dict,
     }).export_as_json(os.path.join(image_path, "results"))
+    os.system("mv -f results %s" % image_path)
 except Exception as e:
     print("Failed saving plots")
     traceback.print_exc()
