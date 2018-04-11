@@ -7,6 +7,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 import os
+import traceback
 
 from frequency_filtering import FrequencyFilter
 
@@ -132,8 +133,8 @@ try:
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         test()
-except:
-    pass
+except KeyboardInterrupt as e:
+    print "CTRL-C detected - stopping training"
 
 freq_filter.plot()
 
@@ -148,5 +149,6 @@ try:
     logger.info("image_path = %s" % image_path)
     common.media.save_all_figs(image_path)
     opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
-except:
-    pass
+except Exception as e:
+    print "Failed saving plots"
+    traceback.print_exc()
