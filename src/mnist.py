@@ -147,7 +147,8 @@ try:
 
     image_path = os.path.join("..", "data", "generated", "images." + common.aux.get_fname_timestamp())
     logger.info("image_path = %s" % image_path)
-    common.media.save_all_figs(image_path)
+    common.media.save_all_figs(image_path, im_type="png")
+    common.media.save_all_figs(image_path, im_type="html")
     opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
 except Exception as e:
     print("Failed saving plots")
