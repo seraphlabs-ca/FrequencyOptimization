@@ -85,12 +85,22 @@ class FrequencyFilter(object):
             data = self.signal_dict[k]
             f_data = self.f_signal_dict[k]
 
+            def desc_data(d):
+                max_ind = np.argmax(d)
+                max_val = d[max_ind]
+                min_ind = np.argmin(d)
+                min_val = d[min_ind]
+
+                desc = "min = %.4e [%i] max = %.4e [%i]" % (min_val, min_ind, max_val, max_ind)
+
+                return desc
+
             plt.figure()
-            plt.plot(data, 'k--', lw=3, label="data")
-            plt.plot(f_data, 'r', lw=1, label="f_data")
+            plt.plot(data, 'k--', lw=3, label="data %s" % desc_data(data))
+            plt.plot(f_data, 'r', lw=1, label="f_data %s" % desc_data(f_data))
             plt.xlabel("step")
             plt.ylabel("value")
             plt.grid()
-            plt.title(k)
+            plt.title("%s" % (k))
             plt.legend(loc="best")
             plt.tight_layout()
