@@ -41,6 +41,7 @@ parser.add_argument('--freq-order', type=int, default=3,
                     help='frequency filtering filter order')
 
 opt = parser.parse_args()
+args.cuda = not args.no_cuda and torch.cuda.is_available()
 print(opt)
 
 
