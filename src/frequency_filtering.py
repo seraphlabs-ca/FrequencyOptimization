@@ -45,7 +45,6 @@ class FrequencyFilter(object):
             data = self.signal_dict.get(k, [])
             data.append(v.data.numpy().tolist())
             if self.active:
-                import pudb; pudb.set_trace()
                 f_data = butter_apply_filter(
                     data=data,
                     cutoff=self.cutoff,

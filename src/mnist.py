@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
+import os
 
 from frequency_filtering import FrequencyFilter
 
@@ -135,3 +136,17 @@ except:
     pass
 
 freq_filter.plot()
+
+# install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
+try:
+    import common
+    import common.media
+    from common.root_logger import logger
+    import common.options as opts
+
+    image_path = os.path.join("..", "data", "images." + common.aux.get_fname_timestamp())
+    logger.info("image_path = %s" % image_path)
+    common.media.save_all_figs(image_path)
+    opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
+except:
+    pass
