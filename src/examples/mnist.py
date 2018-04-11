@@ -100,7 +100,7 @@ def train(epoch):
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
-        loss = freq_filter.step({"train": loss})["train"]
+        loss = freq_filter.step({"train.loss": loss})["train"]
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
@@ -126,7 +126,8 @@ def test():
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
-    freq_filter.step({"test": test_loss})["test"]
+    freq_filter.step({"test.loss": test_loss})
+    freq_filter.step({"test.accuracy": float(correct) / len(test_loader.dataset)})
 
 
 try:
