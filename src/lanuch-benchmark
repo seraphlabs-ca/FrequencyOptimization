@@ -6,6 +6,4 @@ parallel-run \
     --delay 10 \
     --jobs `get-cpu-num` \
     -- \
-    nvidia-run-free-gpu '""' python -- $1 \
-    --freq-cutoff \
-    ::: -1.0 0.4 0.1 0.01 0.001 0.0001
+    nvidia-run-free-gpu "''" python -- $1 --freq-cutoff ::: -1.0 0.4 0.1 0.01 0.001 0.0001
