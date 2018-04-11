@@ -25,7 +25,8 @@ class FrequencyFilter(object):
     Return a low-pass filtered value to pytoch variables
     """
 
-    def __init__(self, cutoff=0.1, order=3, btype='low'):
+    def __init__(self, active=True, cutoff=0.1, order=3, btype='low'):
+        self.active = active
         self.cutoff = cutoff
         self.order = order
         self.btype = btype
@@ -43,13 +44,16 @@ class FrequencyFilter(object):
         for name, value in self.signal_dict:
             data = self.signal_dict.get(name, [])
             data.append(value.data.numpy().tolist())
-            f_data = butter_apply_filter(
-                data=data,
-                cutoff=self.cutoff,
-                fs=1.0,
-                order=self.order,
-                btype=self.btype,
-            )
+            if self.active:
+                f_data = butter_apply_filter(
+                    data=data,
+                    cutoff=self.cutoff,
+                    fs=1.0,
+                    order=self.order,
+                    btype=self.btype,
+                )
+            else:
+                f_data = data
 
             self.signal_dict[k] = data
             self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
@@ -59,3 +63,21 @@ class FrequencyFilter(object):
             f_signal_dict[k] = value * coef
 
         return f_signal_dict
+
+    def plot(self):
+        """
+        Plots all stored data
+        """
+        for k in self.signal_dict.keys():
+            data = self.signal_dict[k]
+            f_data = self.f_signal_dict[k]
+
+            plt.figure()
+            plt.plot(data, 'k--', lw=3, label="data")
+            plt.plot(f_data, 'r', lw=1, label="f_data")
+            plt.xlabel("step")
+            plt.ylabel("value")
+            plt.grid()
+            plt.title("k")
+            plt.legend(loc="best")
+            plt.tight_layout()

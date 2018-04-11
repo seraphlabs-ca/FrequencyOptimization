@@ -7,6 +7,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
+from frequency_filtering import FrequencyFilter
+
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
@@ -25,6 +27,12 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
+parser.add_argument('--freq-filter', action='store_true', default=False, metavar="freq_filter",
+                    help='apply frequency filtering')
+parser.add_argument('--freq-cutoff', type=float, default=0.1, metavar='cutoff',
+                    help='frequency filtering cutoff \in (0, 0.5)')
+parser.add_argument('--freq-order', type=int, default=3, metavar='order',
+                    help='frequency filtering filter order')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -74,6 +82,16 @@ if args.cuda:
 
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
+freq_filter = FrequencyFilter(
+    active=args.freq_filter,
+    cutoff=args.cutoff,
+    order=args.order,
+)
+
+
+def step_filter(loss):
+    return freq_filter.step({"loss": loss})["loss"]
+
 
 def train(epoch):
     model.train()
@@ -111,6 +129,11 @@ def test():
         100. * correct / len(test_loader.dataset)))
 
 
-for epoch in range(1, args.epochs + 1):
-    train(epoch)
-    test()
+try:
+    for epoch in range(1, args.epochs + 1):
+        train(epoch)
+        test()
+except:
+    pass
+
+freq_filter.plot()
