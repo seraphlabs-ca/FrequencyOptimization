@@ -150,6 +150,10 @@ try:
     common.media.save_all_figs(image_path, im_type="png")
     common.media.save_all_figs(image_path, im_type="html")
     opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
+    opts.Options({
+        "signal": freq_filter.signal_dict,
+        "f_signal": freq_filter.f_signal_dict,
+    }).export_as_json(os.path.join(image_path, "results"))
 except Exception as e:
     print("Failed saving plots")
     traceback.print_exc()
