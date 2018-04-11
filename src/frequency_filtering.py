@@ -47,7 +47,7 @@ class FrequencyFilter(object):
             if isinstance(v, float):
                 d = v
             else:
-                d = v.data.numpy().tolist()
+                d = v.data.clone().cpu().numpy().tolist()
                 if isinstance(d, list):
                     d = d[0]
 
