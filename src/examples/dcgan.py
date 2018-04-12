@@ -255,7 +255,7 @@ try:
             output = netD(inputv)
             errD_real = criterion(output, labelv)
             if epoch > 0:
-                errD_real = torch.clamp(freq_filter.step({"train.errD_real": errD_real})["train.errD_real"], 1e-3)
+                errD_real = torch.clamp(freq_filter.step({"train.errD_real": errD_real})["train.errD_real"], 1e-6)
             else:
                 freq_filter.step({"train.errD_real": errD_real})
             errD_real.backward()
@@ -269,7 +269,7 @@ try:
             output = netD(fake.detach())
             errD_fake = criterion(output, labelv)
             if epoch > 0:
-                errD_fake = torch.clamp(freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"], 1e-3)
+                errD_fake = torch.clamp(freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"], 1e-6)
             else:
                 freq_filter.step({"train.errD_fake": errD_fake})
             errD_fake.backward()
@@ -289,7 +289,7 @@ try:
             output = netD(fake)
             errG = criterion(output, labelv)
             if epoch > 0:
-                errG = torch.clamp(freq_filter.step({"train.errG": errG})["train.errG"], 1e-3)
+                errG = torch.clamp(freq_filter.step({"train.errG": errG})["train.errG"], 1e-6)
             else:
                 freq_filter.step({"train.errG": errG})
             errG.backward()
@@ -323,6 +323,7 @@ try:
                 "f_signal": freq_filter.f_signal_dict,
             }).export_as_json(os.path.join(image_path, "results"))
         except Exception as e:
+            import pudb; pudb.set_trace()
             pass
 
         # do checkpointing
