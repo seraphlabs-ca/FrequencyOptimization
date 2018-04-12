@@ -336,7 +336,7 @@ def validate(val_loader, model, criterion, freq_filter):
         top1.update(prec[0], input.size(0))
 
         freq_filter.step({"val.loss": loss}, min_val=1e-1, max_val=1e1)
-        freq_filter.step({"val.prec": prec.cpu().numpy().tolist()}, min_val=1e-1, max_val=1e1)
+        freq_filter.step({"val.prec": prec.cpu().numpy().tolist()[0]}, min_val=1e-1, max_val=1e1)
 
         # measure elapsed time
         batch_time.update(time.time() - end)
