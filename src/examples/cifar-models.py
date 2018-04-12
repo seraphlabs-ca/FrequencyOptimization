@@ -150,7 +150,7 @@ def main():
             train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
         test_dataset = torchvision.datasets.CIFAR10(
-            root='./data',
+            root='../data',
             train=False,
             download=True,
             transform=transforms.Compose([
@@ -164,7 +164,7 @@ def main():
         normalize = transforms.Normalize(mean=[0.507, 0.487, 0.441], std=[0.267, 0.256, 0.276])
 
         train_dataset = torchvision.datasets.CIFAR100(
-            root='./data',
+            root='../data',
             train=True,
             download=True,
             transform=transforms.Compose([
@@ -177,7 +177,7 @@ def main():
             train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
         test_dataset = torchvision.datasets.CIFAR100(
-            root='./data',
+            root='../data',
             train=False,
             download=True,
             transform=transforms.Compose([
