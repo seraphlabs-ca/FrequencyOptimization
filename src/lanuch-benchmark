@@ -4,6 +4,6 @@ echo "Usage: ${0:h} <experiment script>"
 
 parallel-run \
     --delay 15 \
-    --jobs `get-cpu-num` \
+    --jobs 4 \
     -- \
     nvidia-run-free-gpu "''" python -- $* --freq-cutoff ::: -1.0 0.4 0.1 0.01 0.001 0.0001
