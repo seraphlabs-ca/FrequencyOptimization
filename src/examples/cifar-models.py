@@ -108,6 +108,12 @@ def main():
         criterion = nn.CrossEntropyLoss().cuda()
         optimizer = optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
         cudnn.benchmark = True
+
+        freq_filter = FrequencyFilter(
+            active=args.freq_cutoff > 0.0,
+            cutoff=args.freq_cutoff,
+            order=args.freq_order,
+        )
     else:
         print('Cuda is not available!')
         return
@@ -131,7 +137,7 @@ def main():
         normalize = transforms.Normalize(mean=[0.491, 0.482, 0.447], std=[0.247, 0.243, 0.262])
 
         train_dataset = torchvision.datasets.CIFAR10(
-            root='./data',
+            root='../data/',
             train=True,
             download=True,
             transform=transforms.Compose([
@@ -181,7 +187,7 @@ def main():
         testloader = torch.utils.data.DataLoader(test_dataset, batch_size=100, shuffle=False, num_workers=2)
 
     if args.evaluate:
-        validate(testloader, model, criterion)
+        validate(testloader, model, criterion, freq_filter)
         return
 
     try:
@@ -189,10 +195,10 @@ def main():
             adjust_learning_rate(optimizer, epoch, model_type)
 
             # train for one epoch
-            train(trainloader, model, criterion, optimizer, epoch)
+            train(trainloader, model, criterion, optimizer, epoch, freq_filter)
 
             # evaluate on test set
-            prec = validate(testloader, model, criterion)
+            prec = validate(testloader, model, criterion, freq_filter)
 
             # remember best precision and save checkpoint
             is_best = prec > best_prec
@@ -259,7 +265,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def train(trainloader, model, criterion, optimizer, epoch):
+def train(trainloader, model, criterion, optimizer, epoch, freq_filter):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -287,6 +293,8 @@ def train(trainloader, model, criterion, optimizer, epoch):
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
+
+        loss = freq_filter.step({"train.loss": loss}, min_val=1e-1, max_val=1e1)["train.loss"]
         loss.backward()
         optimizer.step()
 
@@ -304,7 +312,7 @@ def train(trainloader, model, criterion, optimizer, epoch):
                       data_time=data_time, loss=losses, top1=top1))
 
 
-def validate(val_loader, model, criterion):
+def validate(val_loader, model, criterion, freq_filter):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
@@ -326,6 +334,9 @@ def validate(val_loader, model, criterion):
         prec = accuracy(output.data, target)[0]
         losses.update(loss.data[0], input.size(0))
         top1.update(prec[0], input.size(0))
+
+        freq_filter.step({"val.loss": loss}, min_val=1e-1, max_val=1e1)
+        freq_filter.step({"val.prec": prec}, min_val=1e-1, max_val=1e1)
 
         # measure elapsed time
         batch_time.update(time.time() - end)
