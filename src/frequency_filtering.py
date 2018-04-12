@@ -40,7 +40,7 @@ class FrequencyFilter(object):
         self.signal_dict = {}
         self.f_signal_dict = {}
 
-    def step(self, signal_dict):
+    def step(self, signal_dict, min_val=None, max_val=None):
         """
         Returns a filtered version of signal_dict
 
@@ -70,6 +70,12 @@ class FrequencyFilter(object):
 
             self.signal_dict[k] = data
             self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
+
+            if min_val is not None:
+                self.f_signal_dict[k][-1] = max(min_val, self.f_signal_dict[k][-1])
+
+            if max_val is not None:
+                self.f_signal_dict[k][-1] = min(max_val, self.f_signal_dict[k][-1])
 
             # scale signal
             coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
