@@ -304,11 +304,10 @@ try:
 
         # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
         try:
-            [plt.close(fig) for fig in common.media.get_all_figs()]
-            freq_filter.plot()
-            common.media.save_all_figs(image_path, im_type="png", overwrite=True)
-            common.media.save_all_figs(image_path, im_type="html", overwrite=True)
-            [plt.close(fig) for fig in common.media.get_all_figs()]
+            all_figs = freq_filter.plot()
+            common.media.save_all_figs(image_path, im_type="png")
+            common.media.save_all_figs(image_path, im_type="html")
+            [plt.close(fig.number) for fig in all_figs]
             opts.Options(vars(opt)).export_as_ini(os.path.join(image_path, "args"))
             opts.Options({
                 "signal": freq_filter.signal_dict,
@@ -327,8 +326,8 @@ freq_filter.plot()
 
 # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
 try:
-    common.media.save_all_figs(image_path, im_type="png", overwrite=True)
-    common.media.save_all_figs(image_path, im_type="html", overwrite=True)
+    common.media.save_all_figs(image_path, im_type="png")
+    common.media.save_all_figs(image_path, im_type="html")
     opts.Options(vars(opt)).export_as_ini(os.path.join(image_path, "args"))
     opts.Options({
         "signal": freq_filter.signal_dict,

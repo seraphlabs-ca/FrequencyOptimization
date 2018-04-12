@@ -81,6 +81,7 @@ class FrequencyFilter(object):
         """
         Plots all stored data
         """
+        all_figs = []
         for k in self.signal_dict.keys():
             data = self.signal_dict[k]
             f_data = self.f_signal_dict[k]
@@ -95,7 +96,8 @@ class FrequencyFilter(object):
 
                 return desc
 
-            plt.figure()
+            fig = plt.figure()
+            all_figs.append(fig)
             plt.plot(data, 'k--', lw=3, label="data %s" % desc_data(data))
             plt.plot(f_data, 'r', lw=1, label="f_data %s" % desc_data(f_data))
             plt.xlabel("step")
@@ -104,3 +106,5 @@ class FrequencyFilter(object):
             plt.title("%s" % (k))
             plt.legend(loc="best")
             plt.tight_layout()
+
+        return all_figs
