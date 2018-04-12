@@ -13,6 +13,7 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from torch.autograd import Variable
 
+import matplotlib.pyplot as plt
 import os
 import traceback
 from frequency_filtering import FrequencyFilter
@@ -313,7 +314,6 @@ try:
 
         # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
         try:
-            import pudb; pudb.set_trace()
             plt.close('all')
             freq_filter.plot()
             common.media.save_all_figs(image_path, im_type="png")
