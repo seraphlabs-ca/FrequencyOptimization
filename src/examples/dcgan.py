@@ -255,7 +255,7 @@ try:
 
             output = netD(inputv)
             errD_real = criterion(output, labelv)
-            errD_real = freq_filter.step({"train.errD_real": errD_real}, min_val=1e-6, max_val=1e2)["train.errD_real"]
+            errD_real = freq_filter.step({"train.errD_real": errD_real}, min_val=1e-1, max_val=1e1)["train.errD_real"]
             errD_real.backward()
 
             D_x = output.data.mean()
@@ -267,7 +267,7 @@ try:
             labelv = Variable(label.fill_(fake_label))
             output = netD(fake.detach())
             errD_fake = criterion(output, labelv)
-            errD_fake = freq_filter.step({"train.errD_fake": errD_fake}, min_val=1e-6, max_val=1e2)["train.errD_fake"]
+            errD_fake = freq_filter.step({"train.errD_fake": errD_fake}, min_val=1e-1, max_val=1e1)["train.errD_fake"]
             errD_fake.backward()
             D_G_z1 = output.data.mean()
 
@@ -298,7 +298,7 @@ try:
             labelv = Variable(label.fill_(real_label))  # fake labels are real for generator cost
             output = netD(fake)
             errG = criterion(output, labelv)
-            errG = freq_filter.step({"train.errG": errG}, min_val=1e-6, max_val=1e2)["train.errG"]
+            errG = freq_filter.step({"train.errG": errG}, min_val=1e-1, max_val=1e1)["train.errG"]
             errG.backward()
             D_G_z2 = output.data.mean()
 
