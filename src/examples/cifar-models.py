@@ -23,7 +23,7 @@ from frequency_filtering import FrequencyFilter
 
 
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Training')
-parser.add_argument('--model-name', default="", type=str, help='name of model to train')
+parser.add_argument('--model-name', default="resnet20_cifar", type=str, help='name of model to train')
 parser.add_argument('--epochs', default=200, type=int, metavar='N', help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N',
