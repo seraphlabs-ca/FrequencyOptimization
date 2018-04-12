@@ -313,6 +313,7 @@ try:
 
         # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
         try:
+            import pudb; pudb.set_trace()
             plt.close('all')
             freq_filter.plot()
             common.media.save_all_figs(image_path, im_type="png")
@@ -323,7 +324,6 @@ try:
                 "f_signal": freq_filter.f_signal_dict,
             }).export_as_json(os.path.join(image_path, "results"))
         except Exception as e:
-            import pudb; pudb.set_trace()
             pass
 
         # do checkpointing
