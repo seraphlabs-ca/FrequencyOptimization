@@ -51,14 +51,13 @@ def main():
     use_gpu = torch.cuda.is_available()
 
     # Model building
-    print('=> Building model...')
+    print('=> Building model "%s"...' % args.model_name)
     if use_gpu:
         # model can be set to anyone that I have defined in models folder
         # note the model should match to the cifar type !
 
         model_name = args.model_name
-        model = eval(model_name)
-        import pudb; pudb.set_trace()
+        model = eval(model_name)()
         # model = resnet20_cifar()
         # model = resnet32_cifar()
         # model = resnet44_cifar()
