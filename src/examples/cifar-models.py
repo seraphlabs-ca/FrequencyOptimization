@@ -58,6 +58,7 @@ def main():
 
         model_name = args.model_name
         model = eval(model_name)
+        import pudb; pudb.set_trace()
         # model = resnet20_cifar()
         # model = resnet32_cifar()
         # model = resnet44_cifar()
