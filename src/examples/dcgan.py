@@ -254,7 +254,10 @@ try:
 
             output = netD(inputv)
             errD_real = criterion(output, labelv)
-            errD_real = torch.clamp(freq_filter.step({"train.errD_real": errD_real})["train.errD_real"], 1e-3)
+            if epoch > 0:
+                errD_real = torch.clamp(freq_filter.step({"train.errD_real": errD_real})["train.errD_real"], 1e-3)
+            else:
+                freq_filter.step({"train.errD_real": errD_real})
             errD_real.backward()
             D_x = output.data.mean()
 
@@ -265,7 +268,10 @@ try:
             labelv = Variable(label.fill_(fake_label))
             output = netD(fake.detach())
             errD_fake = criterion(output, labelv)
-            errD_fake = torch.clamp(freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"], 1e-3)
+            if epoch > 0:
+                errD_fake = torch.clamp(freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"], 1e-3)
+            else:
+                freq_filter.step({"train.errD_fake": errD_fake})
             errD_fake.backward()
             D_G_z1 = output.data.mean()
 
@@ -282,7 +288,10 @@ try:
             labelv = Variable(label.fill_(real_label))  # fake labels are real for generator cost
             output = netD(fake)
             errG = criterion(output, labelv)
-            errG = torch.clamp(freq_filter.step({"train.errG": errG})["train.errG"], 1e-3)
+            if epoch > 0:
+                errG = torch.clamp(freq_filter.step({"train.errG": errG})["train.errG"], 1e-3)
+            else:
+                freq_filter.step({"train.errG": errG})
             errG.backward()
             D_G_z2 = output.data.mean()
 
@@ -304,10 +313,10 @@ try:
 
         # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
         try:
-            all_figs = freq_filter.plot()
+            plt.close('all')
+            freq_filter.plot()
             common.media.save_all_figs(image_path, im_type="png")
             common.media.save_all_figs(image_path, im_type="html")
-            [plt.close(fig.number) for fig in all_figs]
             opts.Options(vars(opt)).export_as_ini(os.path.join(image_path, "args"))
             opts.Options({
                 "signal": freq_filter.signal_dict,
@@ -322,6 +331,7 @@ try:
 except KeyboardInterrupt as e:
     print("CTRL-C detected - stopping training")
 
+plt.close('all')
 freq_filter.plot()
 
 # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
