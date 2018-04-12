@@ -254,6 +254,9 @@ try:
 
             output = netD(inputv)
             errD_real = criterion(output, labelv)
+            errD_real = torch.clamp(
+                freq_filter.step({"train.errD_real": errD_real})["train.errD_real"],
+                1e-3, 1.0 - 1e-3)
             errD_real.backward()
             D_x = output.data.mean()
 
@@ -264,11 +267,12 @@ try:
             labelv = Variable(label.fill_(fake_label))
             output = netD(fake.detach())
             errD_fake = criterion(output, labelv)
+            errD_fake = torch.clamp(
+                freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"]
+                1e-3, 1.0 - 1e-3)
             errD_fake.backward()
             D_G_z1 = output.data.mean()
 
-            errD_real = freq_filter.step({"train.errD_real": errD_real})["train.errD_real"]
-            errD_fake = freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"]
             freq_filter.step({"train.D_x": D_x})
             freq_filter.step({"train.D_G_z1": D_G_z1})
 
@@ -282,10 +286,12 @@ try:
             labelv = Variable(label.fill_(real_label))  # fake labels are real for generator cost
             output = netD(fake)
             errG = criterion(output, labelv)
+            errG = torch.clamp(
+                freq_filter.step({"train.errG": errG})["train.errG"]
+                1e-3, 1.0 - 1e-3)
             errG.backward()
             D_G_z2 = output.data.mean()
 
-            errG = freq_filter.step({"train.errG": errG})["train.errG"]
             freq_filter.step({"train.D_G_z2": D_G_z2})
 
             optimizerG.step()
@@ -301,6 +307,21 @@ try:
                 vutils.save_image(fake.data,
                                   '%s/fake_samples_epoch_%03d.png' % (image_path, epoch),
                                   normalize=True)
+
+                # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
+                try:
+                    [plt.close(fig) for fig in common.media.get_all_figs()]
+                    freq_filter.plot()
+                    common.media.save_all_figs(image_path, im_type="png")
+                    common.media.save_all_figs(image_path, im_type="html")
+                    [plt.close(fig) for fig in common.media.get_all_figs()]
+                    opts.Options(vars(opt)).export_as_ini(os.path.join(image_path, "args"))
+                    opts.Options({
+                        "signal": freq_filter.signal_dict,
+                        "f_signal": freq_filter.f_signal_dict,
+                    }).export_as_json(os.path.join(image_path, "results"))
+                except Exception as e:
+                    pass
 
         # do checkpointing
         # torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (image_path, epoch))
