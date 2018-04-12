@@ -255,8 +255,7 @@ try:
 
             output = netD(inputv)
             errD_real = criterion(output, labelv)
-            # errD_real = torch.clamp(freq_filter.step({"train.errD_real": errD_real})["train.errD_real"], 1e-6)
-            errD_real = freq_filter.step({"train.errD_real": errD_real}, min_val=1e-6)["train.errD_real"]
+            errD_real = freq_filter.step({"train.errD_real": errD_real}, min_val=1e-6, max_val=1e2)["train.errD_real"]
             errD_real.backward()
 
             D_x = output.data.mean()
@@ -268,8 +267,7 @@ try:
             labelv = Variable(label.fill_(fake_label))
             output = netD(fake.detach())
             errD_fake = criterion(output, labelv)
-            # errD_fake = torch.clamp(freq_filter.step({"train.errD_fake": errD_fake})["train.errD_fake"], 1e-6)
-            errD_fake = freq_filter.step({"train.errD_fake": errD_fake}, min_val=1e-6)["train.errD_fake"]
+            errD_fake = freq_filter.step({"train.errD_fake": errD_fake}, min_val=1e-6, max_val=1e2)["train.errD_fake"]
             errD_fake.backward()
             D_G_z1 = output.data.mean()
 
@@ -300,8 +298,7 @@ try:
             labelv = Variable(label.fill_(real_label))  # fake labels are real for generator cost
             output = netD(fake)
             errG = criterion(output, labelv)
-            # errG = torch.clamp(freq_filter.step({"train.errG": errG})["train.errG"], 1e-6)
-            errG = freq_filter.step({"train.errG": errG}, min_val=1e-6)["train.errG"]
+            errG = freq_filter.step({"train.errG": errG}, min_val=1e-6, max_val=1e2)["train.errG"]
             errG.backward()
             D_G_z2 = output.data.mean()
 

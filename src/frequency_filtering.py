@@ -45,6 +45,8 @@ class FrequencyFilter(object):
         Returns a filtered version of signal_dict
 
         signal_dict - a dictionary with scalar of current value.
+
+        min_val/max_val - min/max coefficient values
         """
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
@@ -71,17 +73,11 @@ class FrequencyFilter(object):
             self.signal_dict[k] = data
             self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
 
-            if min_val is not None:
-                self.f_signal_dict[k][-1] = max(min_val, self.f_signal_dict[k][-1])
-
-            if max_val is not None:
-                self.f_signal_dict[k][-1] = min(max_val, self.f_signal_dict[k][-1])
-
             # scale signal
             coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
 
-            # TODO: remove me
-            coef = np.clip(coef, 1e-1, 10.0)
+            # limit coef
+            coef = np.clip(np.clip(coef, None, max_val), min_val, None)
 
             f_signal_dict[k] = v * coef
 
