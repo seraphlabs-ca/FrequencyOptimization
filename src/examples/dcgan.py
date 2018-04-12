@@ -302,20 +302,20 @@ try:
                                   '%s/fake_samples_epoch_%03d.png' % (image_path, epoch),
                                   normalize=True)
 
-            # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
-            try:
-                [plt.close(fig) for fig in common.media.get_all_figs()]
-                freq_filter.plot()
-                common.media.save_all_figs(image_path, im_type="png")
-                common.media.save_all_figs(image_path, im_type="html")
-                [plt.close(fig) for fig in common.media.get_all_figs()]
-                opts.Options(vars(opt)).export_as_ini(os.path.join(image_path, "args"))
-                opts.Options({
-                    "signal": freq_filter.signal_dict,
-                    "f_signal": freq_filter.f_signal_dict,
-                }).export_as_json(os.path.join(image_path, "results"))
-            except Exception as e:
-                pass
+        # install (Common)[https://github.com/seraphlabs-ca/Common] to save plots
+        try:
+            [plt.close(fig) for fig in common.media.get_all_figs()]
+            freq_filter.plot()
+            common.media.save_all_figs(image_path, im_type="png")
+            common.media.save_all_figs(image_path, im_type="html")
+            [plt.close(fig) for fig in common.media.get_all_figs()]
+            opts.Options(vars(opt)).export_as_ini(os.path.join(image_path, "args"))
+            opts.Options({
+                "signal": freq_filter.signal_dict,
+                "f_signal": freq_filter.f_signal_dict,
+            }).export_as_json(os.path.join(image_path, "results"))
+        except Exception as e:
+            pass
 
         # do checkpointing
         # torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (image_path, epoch))
