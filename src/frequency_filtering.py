@@ -81,7 +81,7 @@ class FrequencyFilter(object):
             coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
 
             # TODO: remove me
-            coef = np.clip(coef, -10.0, 10.0)
+            coef = np.clip(coef, 1e-1, 10.0)
 
             f_signal_dict[k] = v * coef
 
