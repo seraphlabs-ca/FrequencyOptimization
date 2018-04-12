@@ -257,6 +257,7 @@ try:
             errD_real = criterion(output, labelv)
             errD_real = torch.clamp(freq_filter.step({"train.errD_real": errD_real})["train.errD_real"], 1e-6)
             errD_real.backward()
+
             D_x = output.data.mean()
 
             # train with fake
@@ -274,6 +275,20 @@ try:
             freq_filter.step({"train.D_G_z1": D_G_z1})
 
             errD = errD_real + errD_fake
+
+            # gradient clipping
+            torch.nn.utils.clip_grad.clip_grad_norm(
+                parameters=netD.parameters(),
+                max_norm=1.0,
+                norm_type=2,
+            )
+            # gradient clipping
+            torch.nn.utils.clip_grad.clip_grad_norm(
+                parameters=netG.parameters(),
+                max_norm=1.0,
+                norm_type=2,
+            )
+
             optimizerD.step()
 
             ############################
@@ -288,6 +303,19 @@ try:
             D_G_z2 = output.data.mean()
 
             freq_filter.step({"train.D_G_z2": D_G_z2})
+
+            # gradient clipping
+            torch.nn.utils.clip_grad.clip_grad_norm(
+                parameters=netD.parameters(),
+                max_norm=1.0,
+                norm_type=2,
+            )
+            # gradient clipping
+            torch.nn.utils.clip_grad.clip_grad_norm(
+                parameters=netG.parameters(),
+                max_norm=1.0,
+                norm_type=2,
+            )
 
             optimizerG.step()
 
