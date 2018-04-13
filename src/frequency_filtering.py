@@ -1,11 +1,32 @@
 import matplotlib.pyplot as plt
 from scipy.fftpack import rfft, irfft, rfftfreq
-from scipy.signal import butter, lfilter, freqz
+from scipy.signal import butter, filtfilt, freqz
 import numpy as np
 
 #=============================================================================#
 # Functions
 #=============================================================================#
+
+# TODO: test filtfilt
+# TODO: use filter for FFT
+
+
+class Filter(object):
+    """ Linear Filter, notation is similar to matlab's filter function """
+
+    def __init__(self, b, a, xinit, yinit):
+        self.b = np.array(b)
+        self.a = np.array(a)
+        self.x = np.array(xinit)[::-1]
+        self.y = np.array(yinit)[::-1]
+
+    def tick(self, x):
+        self.x = np.hstack((x, self.x[:-1]))
+        y = sum(self.b * self.x[:len(self.b)])
+        y -= sum(self.a[1:] * self.y[:len(self.a) - 1])
+        y /= self.a[0]
+        self.y = np.hstack((y, self.y[:-1]))
+        return y
 
 
 def butter_build_filter(cutoff, fs, order=5, btype='low'):
@@ -17,7 +38,7 @@ def butter_build_filter(cutoff, fs, order=5, btype='low'):
 
 def butter_apply_filter(data, cutoff, fs, order=5, btype='low'):
     b, a = butter_build_filter(cutoff, fs, order=order, btype=btype)
-    y = lfilter(b, a, data)
+    y = filtfilt(b, a, data, method="gust")
     return y
 
 
@@ -59,7 +80,7 @@ class FrequencyFilter(object):
                     d = d[0]
 
             data.append(d)
-            if self.active:
+            if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
                 f_data = butter_apply_filter(
                     data=data,
                     cutoff=self.cutoff,

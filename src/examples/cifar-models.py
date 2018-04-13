@@ -57,7 +57,11 @@ def main():
         # note the model should match to the cifar type !
 
         model_name = args.model_name
-        model = eval(model_name)()
+        if model_name in ["resnet164_cifar", "resnet1001_cifar"
+                          "preact_resnet164_cifar", "preact_resnet1001_cifar"]:
+            model = eval(model_name)(num_classes=100)
+        else:
+            model = eval(model_name)()
         # model = resnet20_cifar()
         # model = resnet32_cifar()
         # model = resnet44_cifar()
