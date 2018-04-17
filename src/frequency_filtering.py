@@ -74,7 +74,7 @@ class FrequencyFilter(object):
                 f_data = data
 
             self.signal_dict[k] = data
-            self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1].tolist()]
+            self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
 
             # # scale signal
             # coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
