@@ -56,7 +56,7 @@ class FrequencyFilter(object):
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
             data = self.signal_dict.get(k, [])
-            if isinstance(v, torch.Tensor) or isinstance(v, torch.Variable):
+            if isinstance(v, torch.Tensor) or isinstance(v, torch.autograd.Variable):
                 # d = v.clone().detach().cpu().numpy().tolist()
                 d = v.data.clone().cpu().numpy().tolist()
             else:
