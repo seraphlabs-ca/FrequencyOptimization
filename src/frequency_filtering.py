@@ -57,7 +57,8 @@ class FrequencyFilter(object):
         for k, v in signal_dict.iteritems():
             data = self.signal_dict.get(k, [])
             if isinstance(v, torch.Tensor):
-                d = v.clone().detach().cpu().numpy().tolist()
+                # d = v.clone().detach().cpu().numpy().tolist()
+                d = v.data.clone().cpu().numpy().tolist()
             else:
                 d = v
 
