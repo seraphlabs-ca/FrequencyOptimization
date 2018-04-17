@@ -65,12 +65,13 @@ class FrequencyFilter(object):
             data.append(d)
             if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
                 f_data = butter_apply_filter(
-                    data=data,
+                    data=np.reshape(data, (len(data), -1)),
                     cutoff=self.cutoff,
                     fs=1.0,
                     order=self.order,
                     btype=self.btype,
                 )
+                f_data = np.reshape(f_data, (len(data),) + tuple(np.shape(d)))
             else:
                 f_data = data
 
