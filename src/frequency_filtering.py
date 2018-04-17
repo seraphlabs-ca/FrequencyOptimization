@@ -3,30 +3,14 @@ from scipy.fftpack import rfft, irfft, rfftfreq
 from scipy.signal import butter, filtfilt, freqz
 import numpy as np
 
+import torch
+from torch.autograd import Variable
 #=============================================================================#
 # Functions
 #=============================================================================#
 
 # TODO: test filtfilt
 # TODO: use filter for FFT
-
-
-class Filter(object):
-    """ Linear Filter, notation is similar to matlab's filter function """
-
-    def __init__(self, b, a, xinit, yinit):
-        self.b = np.array(b)
-        self.a = np.array(a)
-        self.x = np.array(xinit)[::-1]
-        self.y = np.array(yinit)[::-1]
-
-    def tick(self, x):
-        self.x = np.hstack((x, self.x[:-1]))
-        y = sum(self.b * self.x[:len(self.b)])
-        y -= sum(self.a[1:] * self.y[:len(self.a) - 1])
-        y /= self.a[0]
-        self.y = np.hstack((y, self.y[:-1]))
-        return y
 
 
 def butter_build_filter(cutoff, fs, order=5, btype='low'):
@@ -138,3 +122,56 @@ class FrequencyFilter(object):
             plt.tight_layout()
 
         return all_figs
+
+
+class AccurateFrequencyFilter(FrequencyFilter):
+    """
+    Return a low-pass filtered value + gradients to pytoch variables
+    """
+
+    def __init__(self, active=True, cutoff=0.1, order=3, btype='low'):
+        super(AccurateFrequencyFilter, self).__init__(
+            active=active,
+            cutoff=cutoff,
+            order=order,
+            btype=btype,
+        )
+
+        # build filter coefs
+        b, a = butter_build_filter(
+            cutoff=cutoff,
+            fs=fs,
+            order=order,
+            btype=btype,
+        )
+
+        self.b = Variable(b)
+        self.M = len(b)
+        self.a = Variable(a)
+        self.N = len(a)
+
+        if self.M != self.N:
+            raise ValueError("filter len(a) != len(b)")
+
+        # initial value is collected
+        self.x = []
+        self.y = []
+
+    def step(self, signal_dict, min_val=None, max_val=None):
+        """
+        Apply butterworth filter
+        """
+        # TODO: FINISH ME - clone variable + grad (retain_grad()), return weighted value + weighted grad
+        f_signal_dict = {}
+        for k, v in signal_dict.iteritems():
+            x = self.sig
+            if len(self.x) < self.M:
+                self.x.append(x)
+                self.y.append(Variable(torch.zeros(1)))
+            self.x = np.hstack((x, self.x[:-1]))
+            y = sum(self.b * self.x[:len(self.b)])
+            y -= sum(self.a[1:] * self.y[:len(self.a) - 1])
+            y /= self.a[0]
+            self.y = np.hstack((y, self.y[:-1]))
+
+        return y
