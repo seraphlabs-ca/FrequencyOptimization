@@ -59,7 +59,7 @@ class FrequencyFilter(object):
             if isinstance(v, torch.Tensor):
                 d = v.clone().detach().cpu().numpy().tolist()
             else:
-                d = v
+                d = np.array(v).tolist()
 
             data.append(d)
             if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
