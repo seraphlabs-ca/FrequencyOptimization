@@ -99,8 +99,24 @@ def train(epoch):
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
-        loss = freq_filter.step({"train.loss": loss})["train.loss"]
+
+        # collect unfiltered loss
         loss.backward()
+        loss_dict = {
+            "train.loss.val": loss,
+        }
+
+        for n, p in model.named_parameters():
+            loss_dict.update({
+                "train.loss.%s" % n: p.grad,
+            })
+        f_loss_dict = freq_filter.step(loss_dict)
+
+        # update filtered gradients
+        optimizer.zero_grad()
+        for n, p in model.named_parameters():
+            p.grad = Variable(torch.FloatTensor(f_loss_dict["train.loss.%s" % n]))
+
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
@@ -154,10 +170,10 @@ try:
     common.media.save_all_figs(image_path, im_type="png")
     common.media.save_all_figs(image_path, im_type="html")
     opts.Options(vars(args)).export_as_ini(os.path.join(image_path, "args"))
-    opts.Options({
-        "signal": freq_filter.signal_dict,
-        "f_signal": freq_filter.f_signal_dict,
-    }).export_as_json(os.path.join(image_path, "results"))
+    # opts.Options({
+    #     "signal": freq_filter.signal_dict,
+    #     "f_signal": freq_filter.f_signal_dict,
+    # }).export_as_json(os.path.join(image_path, "results"))
 except Exception as e:
     print("Failed saving plots")
     traceback.print_exc()

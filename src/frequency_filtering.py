@@ -56,12 +56,10 @@ class FrequencyFilter(object):
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
             data = self.signal_dict.get(k, [])
-            if isinstance(v, float):
-                d = v
+            if isinstance(v, torch.Tensor):
+                d = v.clone().detach().cpu().numpy().tolist()
             else:
-                d = v.data.clone().cpu().numpy().tolist()
-                if isinstance(d, list):
-                    d = d[0]
+                d = v
 
             data.append(d)
             if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
@@ -76,18 +74,20 @@ class FrequencyFilter(object):
                 f_data = data
 
             self.signal_dict[k] = data
-            self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1]]
+            self.f_signal_dict[k] = self.f_signal_dict.get(k, []) + [f_data[-1].tolist()]
 
-            # scale signal
-            coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
+            # # scale signal
+            # coef = self.f_signal_dict[k][-1] / self.signal_dict[k][-1] if self.signal_dict[k][-1] else 1.0
 
-            # limit coef
-            if max_val is not None:
-                coef = np.clip(coef, None, max_val)
-            if min_val is not None:
-                coef = np.clip(coef, min_val, None)
+            # # limit coef
+            # if max_val is not None:
+            #     coef = np.clip(coef, None, max_val)
+            # if min_val is not None:
+            #     coef = np.clip(coef, min_val, None)
 
-            f_signal_dict[k] = v * coef
+            # f_signal_dict[k] = v * coef
+
+            f_signal_dict[k] = np.copy(f_data[-1])
 
         return f_signal_dict
 
@@ -101,25 +101,31 @@ class FrequencyFilter(object):
             f_data = self.f_signal_dict[k]
 
             def desc_data(d):
-                max_ind = np.argmax(d)
-                max_val = d[max_ind]
-                min_ind = np.argmin(d)
-                min_val = d[min_ind]
+                try:
+                    max_ind = np.argmax(d)
+                    max_val = d[max_ind]
+                    min_ind = np.argmin(d)
+                    min_val = d[min_ind]
 
-                desc = "min = %.4e [%i] max = %.4e [%i]" % (min_val, min_ind, max_val, max_ind)
+                    desc = "min = %.4e [%i] max = %.4e [%i]" % (min_val, min_ind, max_val, max_ind)
+                except:
+                    desc = ""
 
                 return desc
-
-            fig = plt.figure()
-            all_figs.append(fig)
-            plt.plot(data, 'k--', lw=3, label="data %s" % desc_data(data))
-            plt.plot(f_data, 'r', lw=1, label="f_data %s" % desc_data(f_data))
-            plt.xlabel("step")
-            plt.ylabel("value")
-            plt.grid()
-            plt.title("%s" % (k))
-            plt.legend(loc="best")
-            plt.tight_layout()
+            try:
+                fig = plt.figure()
+                plt.plot(data, 'k--', lw=3, label="data %s" % desc_data(data))
+                plt.plot(f_data, 'r', lw=1, label="f_data %s" % desc_data(f_data))
+                plt.xlabel("step")
+                plt.ylabel("value")
+                plt.grid()
+                plt.title("%s" % (k))
+                plt.legend(loc="best")
+                plt.tight_layout()
+            except:
+                plt.close(fig)
+            else:
+                all_figs.append(fig)
 
         return all_figs
 
@@ -167,7 +173,7 @@ class AccurateFrequencyFilter(FrequencyFilter):
             x = self.sig
             if len(self.x) < self.M:
                 self.x.append(x)
-                self.y.append(Variable(torch.zeros(1)))
+                self.y.append(x * 0.0)
             self.x = np.hstack((x, self.x[:-1]))
             y = sum(self.b * self.x[:len(self.b)])
             y -= sum(self.a[1:] * self.y[:len(self.a) - 1])
