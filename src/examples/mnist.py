@@ -115,8 +115,7 @@ def train(epoch):
         # update filtered gradients
         optimizer.zero_grad()
         for n, p in model.named_parameters():
-            import pudb; pudb.set_trace()
-            p._grad = Variable(torch.FloatTensor(f_loss_dict["train.loss.%s" % n]))
+            p.grad = Variable(torch.FloatTensor(f_loss_dict["train.loss.%s" % n])).type_as(p._grad)
 
         optimizer.step()
         if batch_idx % args.log_interval == 0:
