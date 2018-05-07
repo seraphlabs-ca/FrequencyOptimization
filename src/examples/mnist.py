@@ -10,7 +10,7 @@ from torch.autograd import Variable
 import os
 import traceback
 
-from frequency_filtering import FrequencyFilter
+from frequency_filtering import FrequencyFilter, AccurateFrequencyFilter
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')

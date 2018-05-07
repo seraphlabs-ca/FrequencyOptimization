@@ -60,7 +60,7 @@ class FrequencyFilter(object):
                 # d = v.clone().detach().cpu().numpy().tolist()
                 d = v.data.clone().cpu().numpy().tolist()
             else:
-                d = v
+                d = np.array(v).tolist()
 
             data.append(d)
             if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
@@ -145,41 +145,61 @@ class AccurateFrequencyFilter(FrequencyFilter):
             btype=btype,
         )
 
-        # build filter coefs
-        b, a = butter_build_filter(
-            cutoff=cutoff,
-            fs=fs,
-            order=order,
-            btype=btype,
-        )
+        if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
+            # build filter coefs
+            b, a = butter_build_filter(
+                cutoff=cutoff,
+                fs=1.0,
+                order=order,
+                btype=btype,
+            )
 
-        self.b = Variable(b)
-        self.M = len(b)
-        self.a = Variable(a)
-        self.N = len(a)
+            self.b = np.array(b)
+            self.B = len(b)
+            self.a = np.array(a)
+            self.A = len(a)
 
-        if self.M != self.N:
-            raise ValueError("filter len(a) != len(b)")
+            if self.A != self.B:
+                raise ValueError("filter len(a) != len(b)")
 
         # initial value is collected
-        self.x = []
-        self.y = []
+        self.signal_dict = {}
+        self.f_signal_dict = {}
 
     def step(self, signal_dict, min_val=None, max_val=None):
         """
         Apply butterworth filter
         """
-        # TODO: FINISH ME - clone variable + grad (retain_grad()), return weighted value + weighted grad
         f_signal_dict = {}
         for k, v in signal_dict.iteritems():
-            x = self.sig
-            if len(self.x) < self.M:
-                self.x.append(x)
-                self.y.append(x * 0.0)
-            self.x = np.hstack((x, self.x[:-1]))
-            y = sum(self.b * self.x[:len(self.b)])
-            y -= sum(self.a[1:] * self.y[:len(self.a) - 1])
-            y /= self.a[0]
-            self.y = np.hstack((y, self.y[:-1]))
+            x = self.signal_dict.get(k, [])
+            y = self.f_signal_dict.get(k, [])
+            if isinstance(v, torch.Tensor) or isinstance(v, torch.autograd.Variable):
+                d = v.data.clone().cpu().numpy().tolist()
+            else:
+                d = np.array(v).tolist()
 
-        return y
+            x.append(d)
+            if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
+                if len(x) < self.A:
+                    y.append((np.zeros_like(d)).tolist())
+
+                    f_d = d
+                else:
+                    try:
+                        f_d = np.sum(np.reshape(self.b, (-1, ) + (1,) * len(np.shape(d))) * x[:self.B])
+                    except:
+                        import pudb; pudb.set_trace()
+                    # f_d -= np.sum(self.a[1:] * self.y[:(self.A - 1)])
+                    f_d -= np.sum(np.reshape(self.a[1:], (-1, ) + (1,) * len(np.shape(d))) * y[:(self.A - 1)])
+                    f_d /= self.a[0]
+                    y.append(f_d)
+            else:
+                f_d = d
+
+            self.signal_dict[k] = x
+            self.f_signal_dict[k] = y
+
+            f_signal_dict[k] = f_d
+
+        return f_signal_dict
