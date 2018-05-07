@@ -2,7 +2,7 @@
 
 echo "Usage: ${0:h} <experiment script>"
 
-parallel-run \
+parallel-run-tmux \
     --delay 15 \
     --jobs 4 \
     -- \
