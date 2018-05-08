@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from scipy.fftpack import rfft, irfft, rfftfreq
-from scipy.signal import butter, filtfilt, freqz
+from scipy.signal import butter, filtfilt, freqz, lfilter
 import numpy as np
 
 import torch
@@ -22,7 +22,8 @@ def butter_build_filter(cutoff, fs, order=5, btype='low'):
 
 def butter_apply_filter(data, cutoff, fs, order=5, btype='low'):
     b, a = butter_build_filter(cutoff, fs, order=order, btype=btype)
-    y = filtfilt(b, a, data, method="gust", axis=0)
+    # y = filtfilt(b, a, data, method="gust", axis=0)
+    y = lfilter(b, a, data, axis=0)
     return y
 
 

@@ -18,23 +18,19 @@ criterion = torch.nn.MSELoss()
 params = dict(lin.named_parameters())
 
 active = False
-cutoff = 0.4
-lr = 1e-2
+cutoff = 0.1
 
-# filt = ff.FrequencyFilter(active=active, cutoff=cutoff)
-optimizer = torch.optim.SGD(lin.parameters(), lr=lr)
+filt = ff.FrequencyFilter(active=active, cutoff=cutoff)
+optimizer = torch.optim.Adam(lin.parameters(), lr=1e-1)
 
 all_params = opts.Options()
 
 for i in range(500):
-    # if i % 200 == 0:
-    #     cutoff = cutoff / 2
-    #     print "cutoff = ", cutoff
     # zero gradients
     optimizer.zero_grad()
 
     # create training data
-    x = torch.randn((10, 5)) + torch.randn(1)
+    x = torch.randn((10, 5))
     pred = lin(x)
     y = lin_gt(x).detach()
     # y = y + torch.randn_like(y) * 0.01
@@ -55,19 +51,14 @@ for i in range(500):
     }
     all_params *= {k: np.squeeze(p.grad.data.clone().cpu().numpy().astype(np.float32)).tolist()
                    for k, p in params.iteritems()}
-    if active:
-        filt_params = all_params.map(lambda x: ff.butter_apply_filter(x, cutoff, 1.0, btype='low'))
-    else:
-        filt_params = all_params
+    filt_params = all_params.map(lambda x: ff.butter_apply_filter(x, cutoff, 1.0, btype='high'))
     if active:
         optimizer.zero_grad()
         # store filter gradients
         for k, p in params.iteritems():
             if p.grad is not None:
-                g = Variable(torch.FloatTensor(
+                p.grad += Variable(torch.FloatTensor(
                     np.array(filt_params[k][-1], dtype=np.float32).reshape(tuple(p.grad.shape),)))
-                p.grad += g
-                # p.data.add_(-lr, g)
 
     optimizer.step()
     print i, loss.detach().cpu().numpy()
