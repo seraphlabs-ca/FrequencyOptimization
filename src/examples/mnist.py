@@ -83,7 +83,7 @@ if args.cuda:
 
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
-freq_filter = FrequencyFilter(
+freq_filter = AccurateFrequencyFilter(
     active=args.freq_cutoff > 0.0,
     cutoff=args.freq_cutoff,
     order=args.freq_order,

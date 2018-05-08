@@ -22,7 +22,7 @@ def butter_build_filter(cutoff, fs, order=5, btype='low'):
 
 def butter_apply_filter(data, cutoff, fs, order=5, btype='low'):
     b, a = butter_build_filter(cutoff, fs, order=order, btype=btype)
-    y = filtfilt(b, a, data, method="gust")
+    y = filtfilt(b, a, data, method="gust", axis=0)
     return y
 
 
@@ -99,8 +99,8 @@ class FrequencyFilter(object):
         """
         all_figs = []
         for k in self.signal_dict.keys():
-            data = self.signal_dict[k]
-            f_data = self.f_signal_dict[k]
+            data = np.squeeze(self.signal_dict[k])
+            f_data = np.squeeze(self.f_signal_dict[k])
 
             def desc_data(d):
                 try:
@@ -126,6 +126,7 @@ class FrequencyFilter(object):
                 plt.tight_layout()
             except:
                 plt.close(fig)
+                import pudb; pudb.set_trace()
             else:
                 all_figs.append(fig)
 
@@ -154,9 +155,9 @@ class AccurateFrequencyFilter(FrequencyFilter):
                 btype=btype,
             )
 
-            self.b = np.array(b)
+            self.b = np.array(b, dtype=np.float32)
             self.B = len(b)
-            self.a = np.array(a)
+            self.a = np.array(a, dtype=np.float32)
             self.A = len(a)
 
             if self.A != self.B:
@@ -177,7 +178,7 @@ class AccurateFrequencyFilter(FrequencyFilter):
             if isinstance(v, torch.Tensor) or isinstance(v, torch.autograd.Variable):
                 d = v.data.clone().cpu().numpy().tolist()
             else:
-                d = np.array(v).tolist()
+                d = np.array(v, dtype=np.float32).tolist()
 
             x.append(d)
             if self.active and (self.cutoff > 0.0) and (self.cutoff < 0.5):
@@ -186,14 +187,11 @@ class AccurateFrequencyFilter(FrequencyFilter):
 
                     f_d = d
                 else:
-                    try:
-                        f_d = np.sum(np.reshape(self.b, (-1, ) + (1,) * len(np.shape(d))) * x[:self.B])
-                    except:
-                        import pudb; pudb.set_trace()
+                    f_d = np.sum(np.reshape(self.b, (-1, ) + (1,) * len(np.shape(d))) * x[:self.B], axis=0)
                     # f_d -= np.sum(self.a[1:] * self.y[:(self.A - 1)])
-                    f_d -= np.sum(np.reshape(self.a[1:], (-1, ) + (1,) * len(np.shape(d))) * y[:(self.A - 1)])
+                    f_d -= np.sum(np.reshape(self.a[1:], (-1, ) + (1,) * len(np.shape(d))) * y[:(self.A - 1)], axis=0)
                     f_d /= self.a[0]
-                    y.append(f_d)
+                    y.append(f_d.astype(np.float32).tolist())
             else:
                 f_d = d
 
